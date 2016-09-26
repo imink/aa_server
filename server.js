@@ -41,7 +41,7 @@ server.post('api/auth/register', function(req, res) {
   nick.save(function(err) {
     if (err) throw err;
     console.log('User saved successfully');
-    	res.send(formatter.createRes(2001, 'register success', ''));
+   	res.send(formatter.createRes(2001, 'register success', ''));
   });
 });
 
@@ -52,16 +52,16 @@ server.post('api/auth/login', function(req, res, next) {
   }, function(err, user) {
   	if (err) next(new restify.errors.ResourceNotFoundError());
   	if (!user) {
-  		res.json(formatter.createRes(4041, 'user not found', ''));
+  		res.json(formatter.createRes(2002, 'user not found', ''));
   	} else if (user) {
   		if (user.password != req.params.password) {
-  			res.json(formatter.createRes(4042, 'password not correct', ''))
+  			res.json(formatter.createRes(2003, 'password not correct', ''))
   		} else {
   			var token = jwt.sign(user, secret, {
   				expiresIn: '1440m' // 24 hrs
   			});
 
-  			res.json(formatter.createRes(2001, 'success', {token:token}));
+  			res.json(formatter.createRes(2004, 'success', {token:token}));
   		}
   	}
   });
@@ -73,7 +73,7 @@ server.use(function(req, res, next){
   if (token) {
   	jwt.verify(token, secret, function(err, decoded){
   	  if (err) {
-  	  	return res.json({msg: 'token fails'});  	  	
+  	  	return res.json(formatter.createRes(2014, 'success', 'token failed'));  	  	
   	  } else {
   	  	req.decoded = decoded;
   	  	next();
@@ -82,13 +82,13 @@ server.use(function(req, res, next){
   	});
   } else {
   	// no token
-  	res.send({msg:'no token'});
+  	res.send(formatter.createRes(2015, 'success', 'no token'));
   }
 });
 
 server.get('/api/list/users', function(req, res, next){
   User.find({}, function(err, users) {
-	  res.json(users);
+	  res.json(formatter.createRes(2101, 'success', users));
   });
 });
 
