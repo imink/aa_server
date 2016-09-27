@@ -27,13 +27,33 @@ server.use(restify.bodyParser()); // parse the post body into query
 // use morgan to log requests to the console
 server.use(morgan('dev'));
 
+server.get('api/auth/fake-user', function(req, res){
+	var fakeUser = new User({
+	    email: 'fake@fake.com',
+	    password: 12345,
+	    last_name: 'fake',
+	    first_name: 'fake',
+	    phone_no: 12345,
+	    activated: false 
+	});
+	fakeUser.save(function(err) {
+	    if (err) throw err;
+	    console.log('fake user created.');
+   		res.send(formatter.createRes(2001, 'fake register success', ''));
+	});
+});
+
+
 
 
 server.post('api/auth/register', function(req, res) {
   // create a user
   var nick = new User({ 
-    name: req.params.name, 
+    email: req.params.email, 
     password: req.params.password,
+    last_name: req.password.last_name,
+    first_name: req.password.first_name,
+    phone_no: req.password.phone_no,
     activated: false 
   });
 
@@ -47,17 +67,17 @@ server.post('api/auth/register', function(req, res) {
 
 
 server.post('api/auth/login', function(req, res, next) {
- console.log(req.params);
-  if (!req.params.name && !req.params.password) {
-	return res.json(formatter.createRes(2014, 'no name and password', ''));  	
-  } else if (!req.params.name) {
-	return res.json(formatter.createRes(2014, 'no name', ''));  	
+  console.log(req.params);
+  if (!req.params.email && !req.params.password) {
+	return res.json(formatter.createRes(2014, 'no email and password', ''));  	
+  } else if (!req.params.email) {
+	return res.json(formatter.createRes(2014, 'no email', ''));  	
   } else if (!req.params.password) {
 	return res.json(formatter.createRes(2014, 'no password', ''));  	
   } 
  
   User.findOne({
-    name: req.params.name
+    email: req.params.email
   }, function(err, user) {
   	if (err) next(new restify.errors.ResourceNotFoundError());
   	if (!user) {
