@@ -51,9 +51,9 @@ server.post('api/auth/register', function(req, res) {
   var nick = new User({ 
     email: req.params.email, 
     password: req.params.password,
-    last_name: req.password.last_name,
-    first_name: req.password.first_name,
-    phone_no: req.password.phone_no,
+    last_name: req.params.last_name,
+    first_name: req.params.first_name,
+    phone_no: req.params.phone_no,
     activated: false 
   });
 
