@@ -12,7 +12,7 @@ var User   = require('./app/models/user'); // get our mongoose model
 
 var host = process.env.HOST || '127.0.0.1';
 var port = process.env.PORT || '8080';
-
+mongoose.Promise = global.Promise;
 mongoose.connect(config.database); // connect to database
 
 
