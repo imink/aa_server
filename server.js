@@ -47,6 +47,15 @@ server.post('api/auth/register', function(req, res) {
 
 
 server.post('api/auth/login', function(req, res, next) {
+ console.log(req.params);
+  if (!req.params.name && !req.params.password) {
+	return res.json(formatter.createRes(2014, 'no name and password', ''));  	
+  } else if (!req.params.name) {
+	return res.json(formatter.createRes(2014, 'no name', ''));  	
+  } else if (!req.params.password) {
+	return res.json(formatter.createRes(2014, 'no password', ''));  	
+  } 
+ 
   User.findOne({
     name: req.params.name
   }, function(err, user) {
@@ -55,12 +64,11 @@ server.post('api/auth/login', function(req, res, next) {
   		res.json(formatter.createRes(2002, 'user not found', ''));
   	} else if (user) {
   		if (user.password != req.params.password) {
-  			res.json(formatter.createRes(2003, 'password not correct', ''))
+  			res.json(formatter.createRes(2003, 'password not correct', ''));
   		} else {
   			var token = jwt.sign(user, secret, {
   				expiresIn: '1440m' // 24 hrs
   			});
-
   			res.json(formatter.createRes(2004, 'success', {token:token}));
   		}
   	}
