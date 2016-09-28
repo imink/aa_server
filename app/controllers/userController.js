@@ -3,6 +3,7 @@ var formatter = require('../utils/formatter');
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var restify = require('restify');
 var config = require('../../config'); // get our config file
+var bcrypt = require('bcrypt-nodejs');
 
 
 var secret = config.secret;
@@ -47,16 +48,21 @@ exports.postLogin = function(req, res, next) {
     if (err) next(new restify.errors.ResourceNotFoundError());
     if (!user) {
       res.json(formatter.createRes(2002, 'user not found', ''));
-    } else if (user) {
-      if (user.password != req.params.password) {
+    } 
+    bcrypt.compare(req.params.password, user.password, function(err, isMatch){
+      if(err) throw err;
+      if(!isMatch) {
         res.json(formatter.createRes(2003, 'password not correct', ''));
-      } else {
-        var token = jwt.sign(user, secret, {
-          expiresIn: '1440m' // 24 hrs
-        });
-        res.json(formatter.createRes(2004, 'success', {token:token}));
-      }
-    }
+      } 
+    }); 
+    
+    var token = jwt.sign(user, secret, {
+      expiresIn: '1440m' // 24 hrs
+    });
+    
+    res.json(formatter.createRes(2004, 'success', {token:token}));
+    
+  
   });  
   return next();
 };
@@ -85,7 +91,8 @@ exports.postRegister = function(req, res, next) {
 
 
 exports.getListUsers = function(req, res, next) {
-  User.find({}, function(err, users) {
+  User.find(function(err, users) {
+    if (err) throw err;
     res.json(formatter.createRes(2101, 'success', users));
   });
   return next();
