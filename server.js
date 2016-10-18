@@ -6,12 +6,19 @@ var mongoose = require('mongoose');
 var formatter = require('./app/utils/formatter');
 
 
+
+var secret = config.secret;
+
 // controller
 var userController = require('./app/controllers/userController');
-
+var petController = require('./app/controllers/petController');
+var transactionController = require('./app/controllers/transactionController');
 // middleware
-var authMiddleware = require('./app/middleware/authMiddleware.js');
+var authMiddleware = require('./app/middleware/authMiddleware');
 
+
+// service
+var smsService = require('./app/services/authSmsService');
 
 var User   = require('./app/models/user'); // get our mongoose model
 
@@ -35,8 +42,38 @@ server.use(morgan('dev'));
 server.get('api/auth/fake-user', userController.crtFakeUser);
 server.post('api/auth/register', userController.postRegister);
 server.post('api/auth/login', userController.postLogin);
+
+server.get('api/auth/get-sms', userController.getSms);
+
+
 server.use(authMiddleware.validateUser);
+
+
+
 server.get('/api/list/users', userController.getListUsers);
+
+
+// pet api
+server.get('/api/pet/list', petController.getPetsList);
+server.post('/api/pet/new', petController.crtNewPet);
+server.get('api/pet/fake-pet', petController.crtFakePet);
+server.get('api/pet/:id', petController.getPet);
+server.put('api/pet/:id', petController.updatePet);
+server.del('api/pet/:id', petController.deletePet);
+
+
+// transaction api
+server.get('/api/transactions/list', transactionController.getTransList);
+server.post('/api/transaction/new', transactionController.crtTran);
+server.get('api/transaction/:id', transactionController.getTran);
+server.put('api/transaction/:id', transactionController.updateTran);
+server.del('api/transaction/:id', transactionController.deleteTran);
+server.get('api/transaction/:id', transactionController.cancelTran);
+server.get('api/transaction/:id', transactionController.endTran);
+
+
+
+
 
 
 server.listen(port,host, function() {

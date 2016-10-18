@@ -13,6 +13,9 @@ var secret = config.secret;
 var User = require('../models/user');
 
 
+// service 
+var smsService = require('../services/authSmsService');
+
 exports.crtFakeUser = function(req, res, next) {
   var fakeUser = new User({
         email: 'fake@fake.com',
@@ -81,7 +84,7 @@ exports.postRegister = function(req, res, next) {
 
   // save the user
   nick.save(function(err) {
-    if (err) throw err;
+    if (err) return next(err);
     console.log('User saved successfully');
     res.send(formatter.createRes(2001, 'register success', ''));
   });
@@ -91,9 +94,10 @@ exports.postRegister = function(req, res, next) {
 
 
 exports.getListUsers = function(req, res, next) {
+  console.log(req.temp);
   User.find(function(err, users) {
-    if (err) throw err;
-    res.json(formatter.createRes(2101, 'success', users));
+    if (err) return next(err);
+    res.send(formatter.createRes(2101, 'success', users));
   });
   return next();
 };
@@ -106,6 +110,13 @@ exports.getMyProfile = function(req, res, next) {
   return next();
 };
 
+
+
+exports.getSms = function(req, res, next) {
+  console.log(smsService.crtSmsCode());
+  res.json(formatter.createRes(2001, 'success', smsService.crtSmsCode()));
+  return next();
+};
 
 
 

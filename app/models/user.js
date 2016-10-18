@@ -22,7 +22,8 @@ var UserSchema = new mongoose.Schema({
   first_name: String,
   last_name: String,
   phone_no: Number,
-  activated: Boolean
+  activated: Boolean,
+  pets: [mongoose.Schema.Types.ObjectId],
 });
 
 
