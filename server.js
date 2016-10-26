@@ -34,7 +34,7 @@ var server = restify.createServer({
 
 var io = socketio.listen(server.server);
 
-var ioClient = socketClient.connect("http://127.0.0.1:8080");
+// var ioClient = socketClient.connect("http://127.0.0.1:8080");
 
 server.use(restify.queryParser()); // parse the req url
 server.use(restify.bodyParser()); // parse the post body into query

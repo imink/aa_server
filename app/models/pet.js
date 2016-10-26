@@ -18,17 +18,20 @@ var PetSchema = new mongoose.Schema({
   }, 
   behaviours: {
   	routine: String,
+    is_in_season: Boolean,
   	friendly_to_child: Boolean,
+    barks: Boolean,
   	digs: Boolean,
   	jumps_on_people: Boolean,
-  	is_micro_chipped: Boolean
+  	is_micro_chipped: Boolean,
+    has_id_tag: Boolean
   }, 
   health: {
   	medication: String,
   	allergies: String,
   	vet_name: String,
   	vet_addr: String,
-  	vet_phone: Number,
+  	vet_phone: String,
   	insur_name: String,
   	insur_no: String
   }
