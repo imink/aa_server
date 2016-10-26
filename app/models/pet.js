@@ -8,29 +8,29 @@ var PetSchema = new mongoose.Schema({
   description: String, 
   masterId: mongoose.Schema.Types.ObjectId,
   basic: {
-		gender: String,
+		gender: Number,
 		breed: String,
 		yob: Date,
 		size: [String, Number],
-		vacUptoDate: Boolean,
+		vac_uptodate: Boolean,
 		sterilization: Boolean,
-		friendlyToDogs: Boolean 		
+		friendly_to_dogs: Boolean 		
   }, 
   behaviours: {
   	routine: String,
-  	friendlyToChild: Boolean,
+  	friendly_to_child: Boolean,
   	digs: Boolean,
-  	jumpsOnPeople: Boolean,
-  	isMicroChipped: Boolean
+  	jumps_on_people: Boolean,
+  	is_micro_chipped: Boolean
   }, 
   health: {
   	medication: String,
   	allergies: String,
-  	vetName: String,
-  	vetAddr: String,
-  	vetPhone: Number,
-  	insName: String,
-  	insNumber: String
+  	vet_name: String,
+  	vet_addr: String,
+  	vet_phone: Number,
+  	insur_name: String,
+  	insur_no: String
   }
 });
 

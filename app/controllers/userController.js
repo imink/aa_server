@@ -31,7 +31,7 @@ exports.crtFakeUser = function(req, res, next) {
       res.send(formatter.createRes(2001, 'fake register success', ''));
   });
 
-  return next();
+  // return next();
 };
 
 
@@ -67,13 +67,13 @@ exports.postLogin = function(req, res, next) {
     
   
   });  
-  return next();
+  // return next();
 };
 
 // Create endpoint /api/auth/register for POSTS
 exports.postRegister = function(req, res, next) {
   // create a user
-  var nick = new User({ 
+  var newUser = new User({ 
     email: req.params.email, 
     password: req.params.password,
     last_name: req.params.last_name,
@@ -83,23 +83,23 @@ exports.postRegister = function(req, res, next) {
   });
 
   // save the user
-  nick.save(function(err) {
-    if (err) return next(err);
+  newUser.save(function(err) {
+    // if (err) next(err);
+    if (err) throw err;  
     console.log('User saved successfully');
     res.send(formatter.createRes(2001, 'register success', ''));
   });
 
-  return next();
+  // return next();
 };
 
 
 exports.getListUsers = function(req, res, next) {
-  console.log(req.temp);
   User.find(function(err, users) {
-    if (err) return next(err);
+    if (err) throw err;
     res.send(formatter.createRes(2101, 'success', users));
   });
-  return next();
+  // return next();
 };
 
 exports.getMyProfile = function(req, res, next) {
@@ -107,7 +107,7 @@ exports.getMyProfile = function(req, res, next) {
     res.json(formatter.createRes(2101, 'success', users));
   });
 
-  return next();
+  // return next();
 };
 
 
@@ -115,7 +115,7 @@ exports.getMyProfile = function(req, res, next) {
 exports.getSms = function(req, res, next) {
   console.log(smsService.crtSmsCode());
   res.json(formatter.createRes(2001, 'success', smsService.crtSmsCode()));
-  return next();
+  // return next();
 };
 
 

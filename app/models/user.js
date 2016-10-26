@@ -17,12 +17,14 @@ var UserSchema = new mongoose.Schema({
   }, 
   password: {
   	type: String,
-  	required: true
+  	required: true,
+    select: false
   }, 
   first_name: String,
   last_name: String,
   phone_no: Number,
   activated: Boolean,
+  validate_code: Number,
   pets: [mongoose.Schema.Types.ObjectId],
 });
 
