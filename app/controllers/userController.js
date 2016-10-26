@@ -63,7 +63,7 @@ exports.postLogin = function(req, res, next) {
       expiresIn: '1440m' // 24 hrs
     });
     
-    res.json(formatter.createRes(2004, 'success', {token:token}));
+    res.json(formatter.createRes(2004, 'success', {'token':token, 'user':user}));
     
   
   });  
