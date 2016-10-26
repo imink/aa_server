@@ -44,7 +44,7 @@ exports.crtNewPet = function(req, res, next) {
 
 	newPet.save(function(err){
 		if (err) return next(err);
-    res.send(formatter.createRes(2110, 'create pet success', ''));
+    res.send(formatter.createRes(2110, 'create pet success', {'pet_id': newPet._id}));
 	});
 	// return next();
 };
