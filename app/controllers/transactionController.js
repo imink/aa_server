@@ -5,7 +5,7 @@ var config = require('../../config'); // get our config file
 
 
 // model 
-var Transaction = require('../models/Transaction');
+var Transaction = require('../models/transaction');
 
 
 exports.crtTran = function(res, req, next) {
