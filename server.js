@@ -31,7 +31,7 @@ mongoose.connect(config.database); // connect to database
 var server = restify.createServer({
   name: 'AA API Server'
 });
-
+	
 var io = socketio.listen(server.server);
 
 // var ioClient = socketClient.connect("http://127.0.0.1:8080");
@@ -57,7 +57,7 @@ server.get('/api/list/users', userController.getListUsers);
 
 
 // pet api
-server.get('/api/pet/list', petController.getPetsList);
+server.get('/api/my/pet/list', petController.getPetsList);
 server.post('/api/my/pet/new', petController.crtNewPet);
 server.get('api/pet/fake-pet', petController.crtFakePet);
 server.get('api/my/pet/:id', petController.getPet);
