@@ -4,36 +4,43 @@ var mongoose = require('mongoose');
 
 
 var PetSchema = new mongoose.Schema({
-  name: String,
-  description: String, 
   masterId: mongoose.Schema.Types.ObjectId,
   basic: {
-		gender: Number,
+    pic: String,
+    name: String,
+    description: String, 
+		gender: String,
 		breed: String,
-		yob: Date,
-		size: [String, Number],
+		yob: Number,
+		size: String,
+    spayed: Boolean,
 		vac_uptodate: Boolean,
 		sterilization: Boolean,
 		friendly_to_dogs: Boolean 		
   }, 
   behaviours: {
-  	routine: String,
+  	commands: String,
     is_in_season: Boolean,
   	friendly_to_child: Boolean,
+    pulls: Boolean,
     barks: Boolean,
   	digs: Boolean,
   	jumps_on_people: Boolean,
-  	is_micro_chipped: Boolean,
+  	is_chipped: Boolean,
     has_id_tag: Boolean
   }, 
   health: {
   	medication: String,
   	allergies: String,
-  	vet_name: String,
-  	vet_addr: String,
-  	vet_phone: String,
-  	insur_name: String,
-  	insur_no: String
+  	veterinary: {
+      name: String,
+      addr: String,
+      phone: String,
+    },
+    insurance: {
+      name: String,
+      number: String,
+    }
   }
 });
 
