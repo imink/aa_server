@@ -15,7 +15,6 @@ var PetSchema = new mongoose.Schema({
 		size: String,
     spayed: Boolean,
 		vac_uptodate: Boolean,
-		sterilization: Boolean,
 		friendly_to_dogs: Boolean 		
   }, 
   behaviours: {
