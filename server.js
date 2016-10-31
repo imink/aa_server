@@ -6,7 +6,6 @@ var mongoose = require('mongoose');
 var formatter = require('./app/utils/formatter');
 var socketio = require('socket.io');
 var socketClient = require('socket.io-client');
-
 var secret = config.secret;
 
 // controller
@@ -41,8 +40,9 @@ var io = socketio.listen(server.server);
 // var ioClient = socketClient.connect("http://127.0.0.1:8080");
 
 server.use(restify.queryParser()); // parse the req url
-// server.use(restify.bodyParser()); // parse the post body into query
-server.use(restify.jsonBodyParser()); // parse the post body into query
+server.use(restify.bodyParser()); // parse the post body into query
+// server.use(restify.jsonBodyParser()); // parse the post body into query
+// server.use(restify.urlEncodedBodyParser()); // parse the post body into query
 
 // use morgan to log requests to the console
 server.use(morgan('dev'));
@@ -60,10 +60,10 @@ server.post('api/auth/login', userController.postLogin);
 
 server.get('api/auth/get-sms', userController.getSms);
 
-server.post('api/file-upload', localFileUploadService.upload);
-
 
 server.use(authMiddleware.validateUser);
+
+// server.post('api/img/upload', localFileUploadService.upload);
 
 
 
@@ -88,6 +88,8 @@ server.del('api/transaction/:id', transactionController.deleteTran);
 server.get('api/transaction/:id', transactionController.cancelTran);
 server.get('api/transaction/:id', transactionController.endTran);
 
+
+// upload user avatar 
 
 
 

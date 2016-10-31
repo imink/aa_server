@@ -20,6 +20,7 @@ var UserSchema = new mongoose.Schema({
   	required: true,
     select: false
   }, 
+  avatar: String,
   first_name: String,
   last_name: String,
   phone_no: Number,
