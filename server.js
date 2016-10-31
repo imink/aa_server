@@ -19,6 +19,10 @@ var authMiddleware = require('./app/middleware/authMiddleware');
 
 // service
 var smsService = require('./app/services/authSmsService');
+var localFileUploadService = require('./app/services/localFileUploadService');
+
+
+
 
 var User   = require('./app/models/user'); // get our mongoose model
 
@@ -37,9 +41,17 @@ var io = socketio.listen(server.server);
 // var ioClient = socketClient.connect("http://127.0.0.1:8080");
 
 server.use(restify.queryParser()); // parse the req url
-server.use(restify.bodyParser()); // parse the post body into query
+// server.use(restify.bodyParser()); // parse the post body into query
+server.use(restify.jsonBodyParser()); // parse the post body into query
+
 // use morgan to log requests to the console
 server.use(morgan('dev'));
+
+// setup public folder, binding public to resource path
+// eg. /public/img/upload_84c286ddcae5960c34931dfa9e326f63.png binding to ./public/img
+server.get(/\/public\/?.*/, restify.serveStatic({
+    directory: __dirname
+}));
 
 
 server.get('api/auth/fake-user', userController.crtFakeUser);
@@ -47,6 +59,8 @@ server.post('api/auth/register', userController.postRegister);
 server.post('api/auth/login', userController.postLogin);
 
 server.get('api/auth/get-sms', userController.getSms);
+
+server.post('api/file-upload', localFileUploadService.upload);
 
 
 server.use(authMiddleware.validateUser);
@@ -73,6 +87,9 @@ server.put('api/transaction/:id', transactionController.updateTran);
 server.del('api/transaction/:id', transactionController.deleteTran);
 server.get('api/transaction/:id', transactionController.cancelTran);
 server.get('api/transaction/:id', transactionController.endTran);
+
+
+
 
 
 function distance(lat1, lon1, lat2, lon2) {

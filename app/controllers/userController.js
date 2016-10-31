@@ -60,7 +60,7 @@ exports.postLogin = function(req, res, next) {
     }); 
     
     var token = jwt.sign(user, secret, {
-      expiresIn: '1440h' // 24 hrs
+      expiresIn: '7d' // 24 hrs
     });
     
     res.json(formatter.createRes(2004, 'success', {'token':token, 'user':user}));
