@@ -11,7 +11,7 @@ var User = require('../models/user');
 exports.validateUser = function(req, res, next) {
 
   // check header token
-  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+  var token = req.headers['x-access-token'] || req.body.token || req.query.token;
   if (token) {
   	jwt.verify(token, secret, function(err, decoded){
   	  if (err) {

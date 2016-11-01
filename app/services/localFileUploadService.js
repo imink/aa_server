@@ -1,32 +1,44 @@
-var formidable = require('formidable');
-var util = require('util');
+var multer  = require('multer');
+var path = require('path');
 var formatter = require('../utils/formatter');
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
+var config = require('../../config'); // get our config file
 
-var Pet   = require('../models/pet'); // get our mongoose model
-var User   = require('../models/user'); // get our mongoose model
+var User = require('../models/user');
+var Pet = require('../models/pet');
 
 
-exports.upload = function(req, res, next) {
-	// console.log(req);
-	var form = new formidable.IncomingForm();
-	form.uploadDir = "./public/img";
-	form.maxFields = 2048;
-	form.keepExtensions = true;
-		console.log("goo");
 
-	form.parse(req, function(err, fields, files) {
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/img')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+
+exports.userAvatarUpload = function(req, res, next) {
+
+	var upload = multer({ storage: storage}).single('user');
+
+	upload(req, res, function(err){
 		if (err) return next(err);
-		console.log("goo2");
+		User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: req.file.filename}, function(err, user) {
+			if (err) return next(err);
+  		res.send(formatter.createRes(2015, 'user avatar upload successfully', req.file.filename));
+		});
+	}); 		
+};
 
-		if (req.params.type == "pet") {
-    	res.send(formatter.createRes(2001, 'pet avatar upload success', files));
-		} else if (req.params.type == "user") {
-			User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: "name"}, function(err, user){
-				if (err) return next(err);
-		    res.send(formatter.createRes(2001, 'user avatar upload success', user));
-			});
-		} else {
-    	res.send(formatter.createRes(2002, 'unknown img', ''));
-		}
-	});
+
+
+exports.petAvatarUpload = function(req, res, next) {
+	var upload = multer({ storage: storage}).single('pet');
+
+	upload(req, res, function(err){
+		if (err) return next(err);
+		res.send(formatter.createRes(2015, 'user avatar upload successfully', req.file.filename));
+	}); 		
 };

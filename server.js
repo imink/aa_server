@@ -8,10 +8,16 @@ var socketio = require('socket.io');
 var socketClient = require('socket.io-client');
 var secret = config.secret;
 
+
+
+
+
+
 // controller
 var userController = require('./app/controllers/userController');
 var petController = require('./app/controllers/petController');
 var transactionController = require('./app/controllers/transactionController');
+
 // middleware
 var authMiddleware = require('./app/middleware/authMiddleware');
 
@@ -21,9 +27,6 @@ var smsService = require('./app/services/authSmsService');
 var localFileUploadService = require('./app/services/localFileUploadService');
 
 
-
-
-var User   = require('./app/models/user'); // get our mongoose model
 
 var host = process.env.HOST || '127.0.0.1';
 var port = process.env.PORT || '8080';
@@ -41,8 +44,8 @@ var io = socketio.listen(server.server);
 
 server.use(restify.queryParser()); // parse the req url
 server.use(restify.bodyParser()); // parse the post body into query
-// server.use(restify.jsonBodyParser()); // parse the post body into query
-// server.use(restify.urlEncodedBodyParser()); // parse the post body into query
+// server.use(restify.jsonBodyParser())
+			// .use(restify.urlEncodedBodyParser()); // parse the post body into query
 
 // use morgan to log requests to the console
 server.use(morgan('dev'));
@@ -57,13 +60,14 @@ server.get(/\/public\/?.*/, restify.serveStatic({
 server.get('api/auth/fake-user', userController.crtFakeUser);
 server.post('api/auth/register', userController.postRegister);
 server.post('api/auth/login', userController.postLogin);
-
 server.get('api/auth/get-sms', userController.getSms);
 
 
 server.use(authMiddleware.validateUser);
 
-// server.post('api/img/upload', localFileUploadService.upload);
+server.post('api/user/avatar-upload', localFileUploadService.userAvatarUpload);
+
+server.post('api/pet/avatar-upload', localFileUploadService.petAvatarUpload);
 
 
 
@@ -89,9 +93,24 @@ server.get('api/transaction/:id', transactionController.cancelTran);
 server.get('api/transaction/:id', transactionController.endTran);
 
 
+
+
+
+
+
+
 // upload user avatar 
 
+var multer  = require('multer')
+var upload = multer({ dest: './public/img' })
 
+server.post('/profile', upload.single('avatar'), function (req, res, next) {
+  // req.file 是 `avatar` 文件的信息
+  // req.body 将具有文本域数据, 如果存在的话
+  console.log(req.file);
+  	res.send(formatter.createRes(2015, 'failed', 'no token'));
+
+})
 
 
 function distance(lat1, lon1, lat2, lon2) {
