@@ -1,15 +1,12 @@
 // load required packages
 var formatter = require('../utils/formatter');
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
-var restify = require('restify');
-var config = require('../../config'); // get our config file
 
 
 // model 
 var Pet = require('../models/pet');
 
 // get list of pets info
-exports.getPetsList = function(req, res, next) {
+exports.getPetList = function(req, res, next) {
 	Pet.find({masterId: req.auth._doc._id}, function(err, pets) {
 		if (err) return next(err);
 		else {
@@ -69,9 +66,14 @@ exports.updatePet = function(req, res, next) {
 
 // delete pet
 exports.deletePet = function(req, res, next) {
+
 	Pet.findOneAndRemove({_id: req.params.id, masterId: req.auth._doc._id}, function(err, pet) {
 		if (err) return next(err);
-		res.json(formatter.createRes(2113, 'delete successfully', ''));
+		if (pet) {
+			res.json(formatter.createRes(2113, 'delete successfully', ''));
+		} else {
+			res.json(formatter.createRes(2112, 'pet not found', ''));
+		}
 	});
 	// return next();
 };

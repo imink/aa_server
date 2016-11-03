@@ -7,6 +7,16 @@ var secret = config.secret;
 
 var User = require('../models/user');
 
+
+
+
+exports.crtJWT = function() {
+  
+}
+
+
+
+
 // execute before each secure API
 exports.validateUser = function(req, res, next) {
 
@@ -19,7 +29,7 @@ exports.validateUser = function(req, res, next) {
 
   	  } else {
   	  	req.auth = decoded;
-        console.log("ok");
+        console.log("veirfied");
   	  	next();
   	  }
 

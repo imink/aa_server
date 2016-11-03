@@ -6,7 +6,7 @@ var mongoose = require('mongoose');
 var PetSchema = new mongoose.Schema({
   masterId: mongoose.Schema.Types.ObjectId,
   basic: {
-    pic: String,
+    avatar: String,
     name: String,
     description: String, 
 		gender: String,

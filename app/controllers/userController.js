@@ -35,6 +35,18 @@ exports.crtFakeUser = function(req, res, next) {
 };
 
 
+exports.getProfile = function(req, res, next) {
+  User.findOne({_id: req.auth._doc._id}, function(err, user){
+    if (err) return next(err);
+    if (user) res.send(formatter.createRes(2004, 'get user success', user));
+    else res.json(formatter.createRes(2002, 'user not found', ''));
+  });
+};
+
+
+
+
+
 // Create endpoint /api/auth/post for POSTS
 exports.postLogin = function(req, res, next) {
   if (!req.params.email && !req.params.password) {
@@ -94,6 +106,11 @@ exports.postRegister = function(req, res, next) {
 };
 
 
+exports.getLogout = function(req, res, next) {
+  
+}
+
+
 exports.getListUsers = function(req, res, next) {
   User.find(function(err, users) {
     if (err) throw err;
@@ -106,8 +123,6 @@ exports.getMyProfile = function(req, res, next) {
   User.find({}, function(err, users) {
     res.json(formatter.createRes(2101, 'success', users));
   });
-
-  // return next();
 };
 
 

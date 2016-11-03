@@ -17,6 +17,7 @@ var secret = config.secret;
 var userController = require('./app/controllers/userController');
 var petController = require('./app/controllers/petController');
 var transactionController = require('./app/controllers/transactionController');
+var driverController = require('./app/controllers/driverController');
 
 // middleware
 var authMiddleware = require('./app/middleware/authMiddleware');
@@ -25,7 +26,7 @@ var authMiddleware = require('./app/middleware/authMiddleware');
 // service
 var smsService = require('./app/services/authSmsService');
 var localFileUploadService = require('./app/services/localFileUploadService');
-
+var locationService = require('./app/services/locationService');
 
 
 var host = process.env.HOST || '127.0.0.1';
@@ -64,18 +65,20 @@ server.get('api/auth/get-sms', userController.getSms);
 
 
 server.use(authMiddleware.validateUser);
+server.get('api/auth/logout', userController.getLogout);
+server.get('api/user/profile', userController.getProfile);
+server.get('apt/auth/verify', authMiddleware.validateUser);
 
+
+// file upload
 server.post('api/user/avatar-upload', localFileUploadService.userAvatarUpload);
-
-server.post('api/pet/avatar-upload', localFileUploadService.petAvatarUpload);
-
-
+server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
 
 server.get('/api/list/users', userController.getListUsers);
 
 
 // pet api
-server.get('/api/my/pet/list', petController.getPetsList);
+server.get('/api/my/pet/list', petController.getPetList);
 server.post('/api/my/pet/new', petController.crtNewPet);
 server.get('api/pet/fake-pet', petController.crtFakePet);
 server.get('api/my/pet/:id', petController.getPet);
@@ -89,55 +92,37 @@ server.post('/api/transaction/new', transactionController.crtTran);
 server.get('api/transaction/:id', transactionController.getTran);
 server.put('api/transaction/:id', transactionController.updateTran);
 server.del('api/transaction/:id', transactionController.deleteTran);
-server.get('api/transaction/:id', transactionController.cancelTran);
-server.get('api/transaction/:id', transactionController.endTran);
+server.get('api/transaction/:id/cancel', transactionController.cancelTran);
+server.get('api/transaction/:id/finish', transactionController.endTran);
+
+
+// driver api
+server.get('/api/driver/list/:id', driverController.getDriverList);
+server.del('api/driver/:id', driverController.deleteDriver);
+
+server.post('/api/driver/new', driverController.crtNewDriver);
+server.get('api/driver/:id', driverController.getDriver);
+server.put('api/driver/:id', driverController.updateDriver);
 
 
 
 
 
 
+// function distance(lat1, lon1, lat2, lon2) {
+// 	var p = 0.017453292519943295;
+// 	var c = Math.cos;
+// 	var a = 0.5 - c((lat2 - lat1) * p) / 2 +
+// 		c(lat1 * p) * c(lat2 * p) *
+// 		(1 - c((lon2 - lon1) * p)) / 2;
 
-
-// upload user avatar 
-
-var multer  = require('multer')
-var upload = multer({ dest: './public/img' })
-
-server.post('/profile', upload.single('avatar'), function (req, res, next) {
-  // req.file 是 `avatar` 文件的信息
-  // req.body 将具有文本域数据, 如果存在的话
-  console.log(req.file);
-  	res.send(formatter.createRes(2015, 'failed', 'no token'));
-
-})
-
-
-function distance(lat1, lon1, lat2, lon2) {
-	var p = 0.017453292519943295;
-	var c = Math.cos;
-	var a = 0.5 - c((lat2 - lat1) * p) / 2 +
-		c(lat1 * p) * c(lat2 * p) *
-		(1 - c((lon2 - lon1) * p)) / 2;
-
-	return 12742 * Math.asin(Math.sqrt(a));
-}
+// 	return 12742 * Math.asin(Math.sqrt(a));
+// }
 
 var drivers = {};
-var driver1 = {"isDriver":true,
-"latLong": [51.507351, -0.127758]};
-
-// ioClient.emit('init', driver1);
-
-
-
-
 
 // socket io
 io.on('connection', function (socket) {
-  socket.on('my event', function (data) {
-          console.log(data.data);
-  });
 
   socket.on('init', function(data) {
 		if (data.isDriver) {
@@ -182,7 +167,7 @@ io.on('connection', function (socket) {
 				console.log('id=' + at[key])
 				lat2 = drivers[at[key]].latLong[0]
 				long2 = drivers[at[key]].latLong[1]
-				nr = distance(lat1, long1, lat2, long2);
+				nr = locationService.calDistance(lat1, long1, lat2, long2);
 
 				if (nr < near) {
 					near = nr;
@@ -221,12 +206,6 @@ io.on('connection', function (socket) {
 			console.log('Customer Disconnected at' + socket.id);
 		}
 	});
-
-
-
-
-
-
 });
 
 
