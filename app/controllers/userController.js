@@ -65,7 +65,7 @@ exports.postLogin = function(req, res, next) {
       res.json(formatter.createRes(2002, 'user not found', ''));
     } 
     bcrypt.compare(req.params.password, user.password, function(err, isMatch){
-      if(err) throw err;
+      if(err) res.send(err);
       if(!isMatch) {
         res.json(formatter.createRes(2003, 'password not correct', ''));
       } 
@@ -107,8 +107,43 @@ exports.postRegister = function(req, res, next) {
 
 
 exports.getLogout = function(req, res, next) {
-  
+
 }
+
+exports.updatePassword = function(req, res, next) {
+  User.findOne({email: req.params.email}, function(err, user) {
+    if (err) return next(err);
+    if (!user) {
+      res.json(formatter.createRes(2021, 'email not match', ''));
+    } else {
+      // match the user, check password
+      bcrypt.compare(req.params.old_password, user.password, function(err, isMatch){
+        if(err) throw err;
+        if(!isMatch) {
+          res.json(formatter.createRes(2022, 'old password not correct', ''));
+        } else {
+          // update password
+          user.password = req.params.new_password;
+          user.save(function(err) {
+            if (err) return next(err);
+            res.send(formatter.createRes(2030, 'update password successfully', ''));
+          });
+        } 
+      }); 
+    }
+  });
+}
+
+exports.forgotPassword = function(req, res, next) {
+  User.findOne({email: req.params.email}, function(err, user) {
+    if (err) return next(err);
+    if (!user) {
+      res.json(formatter.createRes(2021, 'email not match', ''));
+    } else {
+      // match the user, send email
+    }
+  });
+};
 
 
 exports.getListUsers = function(req, res, next) {

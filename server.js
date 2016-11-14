@@ -8,7 +8,7 @@ var socketio = require('socket.io');
 var socketClient = require('socket.io-client');
 var secret = config.secret;
 
-
+var socketioJwt = require('socketio-jwt');
 
 
 
@@ -62,19 +62,19 @@ server.get('api/auth/fake-user', userController.crtFakeUser);
 server.post('api/auth/register', userController.postRegister);
 server.post('api/auth/login', userController.postLogin);
 server.get('api/auth/get-sms', userController.getSms);
-
+server.post('api/auth/forgot-password', userController.forgotPassword);
 
 server.use(authMiddleware.validateUser);
 server.get('api/auth/logout', userController.getLogout);
 server.get('api/user/profile', userController.getProfile);
 server.get('apt/auth/verify', authMiddleware.validateUser);
+server.post('api/auth/update-password', userController.updatePassword);
+server.get('/api/list/users', userController.getListUsers);
 
 
 // file upload
 server.post('api/user/avatar-upload', localFileUploadService.userAvatarUpload);
 server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
-
-server.get('/api/list/users', userController.getListUsers);
 
 
 // pet api
@@ -109,104 +109,111 @@ server.put('api/driver/:id', driverController.updateDriver);
 
 
 
-// function distance(lat1, lon1, lat2, lon2) {
-// 	var p = 0.017453292519943295;
-// 	var c = Math.cos;
-// 	var a = 0.5 - c((lat2 - lat1) * p) / 2 +
-// 		c(lat1 * p) * c(lat2 * p) *
-// 		(1 - c((lon2 - lon1) * p)) / 2;
-
-// 	return 12742 * Math.asin(Math.sqrt(a));
-// }
-
 var drivers = {};
 
-// socket io
-io.on('connection', function (socket) {
 
-  socket.on('init', function(data) {
-		if (data.isDriver) {
-			drivers[socket.id] = {
-				id: socket.id,
-				latLong: data.latLong
+io.sockets
+  .on('connection', socketioJwt.authorize({
+    secret: secret,
+    timeout: 1000 // 15 seconds to send the authentication message
+  }))
+  .on('authenticated', function(socket) {
+    //this socket is authenticated, we are good to handle more events from it.
+		// console.log('connected & authenticated: ' + JSON.stringify(socket.decoded_token._doc._id));
+	  socket.on('init', function(data) {
+			if (data.isDriver) {
+				drivers[socket.id] = {
+					id: socket.id,
+					latLong: data.latLong
 
-			};
-			socket.isDriver = data.isDriver;
-			console.log("Driver Added at " + socket.id);
-			socket.broadcast.to('customers').emit('driverAdded', drivers[socket.id]);
-		} else {
-			socket.join('customers');
-			var clients = io.sockets.adapter.rooms['customers'];
+				};
+				socket.isDriver = data.isDriver;
+				console.log("[Driver Added] at " + socket.id);
+				socket.broadcast.to('customers').emit('driverAdded', drivers[socket.id]);
+			} else {
+				socket.join('customers');
+				console.log("[Customer Added] at " + socket.id);
 
-			// the client is customers, send divers info to customers
-			socket.emit('initDriverLoc', drivers);
-			console.log(clients);
+				var clients = io.sockets.adapter.rooms['customers'];
 
-		}
-  });
+				// the client is customers, send divers info to customers
+				socket.emit('initDriverLoc', drivers); 
+				// console.log(clients);
 
-  socket.on('book', function(customerData) {
-	var near = 0,length, nr = 0;
-	var at, id, key;
-	var lat1 = customerData.lat;
-	var long1 = customerData.lng;
-	var lat2, long2;
-	var details={};
-	if (customerData.type == 0) {
-		at = Object.keys(drivers);
-		id = at[0];
-		length = Object.keys(drivers).length;
-		console.log(length);
+			}
+  	});
 
-		if (length == 0)
-			id = 0;
-		else if (length == 1) {
+	  socket.on('book', function(customerData) {
+		var near = 0,length, nr = 0;
+		var at, id, key;
+		var lat1 = customerData.lat;
+		var long1 = customerData.lng;
+		var lat2, long2;
+		var details={};
+		if (customerData.type == 0) {
+			at = Object.keys(drivers);
 			id = at[0];
-		} else {
-			for (key in at) {
-				console.log('id=' + at[key])
-				lat2 = drivers[at[key]].latLong[0]
-				long2 = drivers[at[key]].latLong[1]
-				nr = locationService.calDistance(lat1, long1, lat2, long2);
+			length = Object.keys(drivers).length;
+			console.log(length);
 
-				if (nr < near) {
-					near = nr;
-					id = key;
+			if (length == 0)
+				id = 0;
+			else if (length == 1) {
+				id = at[0];
+			} else {
+				for (key in at) {
+					console.log('id=' + at[key])
+					lat2 = drivers[at[key]].latLong[0]
+					long2 = drivers[at[key]].latLong[1]
+					nr = locationService.calDistance(lat1, long1, lat2, long2);
+
+					if (nr < near) {
+						near = nr;
+						id = key;
+					}
 				}
 			}
 		}
-	}
 
-		details[0]=id;	// id of booked car
-		details[1]=customerData[1];	//type 0 for cab 
-		socket.emit('bookid', details);
-		if(details[1]==0)
-		socket.to(id).emit('drivepath', customerData[0]);
-	});
+			details[0]=id;	// id of booked car
+			details[1]=customerData[1];	//type 0 for cab 
+			socket.emit('bookid', details);
+			if(details[1]==0)
+			socket.to(id).emit('drivepath', customerData[0]);
+		});
 
-  socket.on('locChanged', function(data) {
-		drivers[socket.id] = {
-			id: socket.id,
-			latLong: data.latLong
-		}
 
-		socket.broadcast.emit('driverLocChanged', {
-			id: socket.id,
-			latLong: data.latLong
-		})
-	});
 
-	socket.on('disconnect', function() {
-		if (socket.isDriver) {
-			console.log("Driver disconnected at " + socket.id);
-			socket.broadcast.to('customers').emit('driverRemoved', drivers[socket.id]);
-			delete drivers[socket.id];
-		}
-		 else {
-			console.log('Customer Disconnected at' + socket.id);
-		}
-	});
-});
+
+	  socket.on('locChanged', function(data) {
+			drivers[socket.id] = {
+				id: socket.id,
+				latLong: data.latLong
+			}
+
+			socket.broadcast.emit('driverLocChanged', {
+				id: socket.id,
+				latLong: data.latLong
+			})
+		});
+
+		socket.on('disconnect', function() {
+			if (socket.isDriver) {
+				delete drivers[socket.id];			
+				console.log("[Driver Disconnected] at: " + socket.id);
+				socket.broadcast.to('customers').emit('driverRemoved', drivers[socket.id]);
+			}
+			 else {
+				console.log("[Customer Disconnected] at: " + socket.id);
+			}
+		});
+
+
+  });
+
+
+
+
 
 
 
