@@ -74,6 +74,7 @@ exports.postLogin = function(req, res, next) {
               var token = jwt.sign(user, secret, {
                 expiresIn: '30d' // 24 hrs
               });
+
               user = user.toObject();
               delete user.password;
               console.log(user);
@@ -123,17 +124,19 @@ exports.updatePassword = function(req, res, next) {
     } else {
       // match the user, check password
       bcrypt.compare(req.params.old_password, user.password, function(err, isMatch){
-        if(err) throw err;
-        if(!isMatch) {
-          res.json(formatter.createRes(2022, 'old password not correct', ''));
-        } else {
-          // update password
-          user.password = req.params.new_password;
-          user.save(function(err) {
-            if (err) return next(err);
-            res.send(formatter.createRes(2030, 'update password successfully', ''));
-          });
-        } 
+        if (err) res.json(err);
+        else {
+          if(!isMatch) {
+            res.json(formatter.createRes(2022, 'old password not correct', ''));
+          } else {
+            // update password
+            user.password = req.params.new_password;
+            user.save(function(err) {
+              if (err) return next(err);
+              res.send(formatter.createRes(2030, 'update password successfully', ''));
+            });
+          } 
+        }
       }); 
     }
   });
