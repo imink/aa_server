@@ -27,7 +27,7 @@
   /**
    * Deployment section
    * http://pm2.keymetrics.io/docs/usage/deployment/
-   */
+   */ 
   deploy : {
     production : {
       user : "root",
@@ -35,7 +35,9 @@
       ref  : "origin/master",
       repo : "git@github.com:imink/aa_server.git",
       path : "~/workspace/production",
-      "pre-deploy-local" : "echo 'This is a local executed command'",
+      "pre-setup": "rm -rf /root/workspace/production/source",
+      "pre-deploy-local" : 
+        "echo 'This is a local executed command'",
       "post-deploy" : "npm install && pm2 startOrRestart ecosystem.json --env dev",
       env : {
         NODE_ENV: "production",

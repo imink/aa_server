@@ -4,3 +4,5 @@ config.js
 /node_modules/*
 
 /public/*
+
+./ecosystem.json
