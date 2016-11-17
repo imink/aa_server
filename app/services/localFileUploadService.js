@@ -22,13 +22,20 @@ var storage = multer.diskStorage({
 exports.userAvatarUpload = function(req, res, next) {
 
 	var upload = multer({ storage: storage}).single('user');
-
 	upload(req, res, function(err){
-		if (err) return next(err);
-		User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: req.file.filename}, function(err, user) {
-			if (err) return next(err);
-  		res.send(formatter.createRes(2015, 'user avatar upload successfully', req.file.filename));
-		});
+		if (err) res.json(err);
+		else {
+			User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: req.file.filename}, function(err, user) {
+				if (err) res.json(err);
+				else {
+					if (user) {
+			  		res.send(formatter.createRes(2015, 'user avatar upload successfully', req.file.filename));					
+					} else {
+		        res.json(formatter.createRes(2002, 'user not found', ''));	
+					}
+				}
+			});
+		}
 	}); 		
 };
 

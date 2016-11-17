@@ -56,28 +56,33 @@ exports.postLogin = function(req, res, next) {
   } else if (!req.params.password) {
     return res.json(formatter.createRes(2014, 'no password', ''));    
   } 
- 
+  
   User.findOne({
     email: req.params.email
-  }, function(err, user) {
-    if (err) next(new restify.errors.ResourceNotFoundError());
-    if (!user) {
-      res.json(formatter.createRes(2002, 'user not found', ''));
-    } 
-    bcrypt.compare(req.params.password, user.password, function(err, isMatch){
-      if(err) res.send(err);
-      if(!isMatch) {
-        res.json(formatter.createRes(2003, 'password not correct', ''));
-      } 
-    }); 
-    
-    var token = jwt.sign(user, secret, {
-      expiresIn: '7d' // 24 hrs
-    });
-    
-    res.json(formatter.createRes(2004, 'success', {'token':token, 'user':user}));
-    
-  
+  }).select('+password').exec(function(err, user) {
+    if (err) res.json(err);
+    else {
+      if (!user) {
+        res.json(formatter.createRes(2002, 'user not found', ''));
+      } else {
+        bcrypt.compare(req.params.password, user.password, function(err, isMatch){
+          if(err) res.json(err);
+          else {
+            if(!isMatch) {
+              res.json(formatter.createRes(2003, 'password not correct', ''));
+            } else {
+              var token = jwt.sign(user, secret, {
+                expiresIn: '30d' // 24 hrs
+              });
+              user = user.toObject();
+              delete user.password;
+              console.log(user);
+              res.json(formatter.createRes(2004, 'success', {'token':token, 'user':user}));
+            }  
+          } 
+        });       
+      }
+    }
   });  
   // return next();
 };

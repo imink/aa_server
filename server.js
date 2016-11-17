@@ -29,7 +29,7 @@ var localFileUploadService = require('./app/services/localFileUploadService');
 var locationService = require('./app/services/locationService');
 
 
-var host = process.env.HOST || '127.0.0.1';
+var host = process.env.HOST || 'localhost';
 var port = process.env.PORT || '8080';
 mongoose.Promise = global.Promise;
 mongoose.connect(config.database); // connect to database
@@ -44,9 +44,29 @@ var io = socketio.listen(server.server);
 // var ioClient = socketClient.connect("http://127.0.0.1:8080");
 
 server.use(restify.queryParser()); // parse the req url
-server.use(restify.bodyParser()); // parse the post body into query
-// server.use(restify.jsonBodyParser())
+// server.use(restify.bodyParser()); // parse the post body into query
+server.use(restify.jsonBodyParser());
 			// .use(restify.urlEncodedBodyParser()); // parse the post body into query
+
+
+var options = {
+	  maxBodySize: 0,
+    mapParams: true,
+    mapFiles: false,
+    overrideParams: false,
+    multipartHandler: function(part) {
+        part.on('data', function(data) {
+          /* do something with the multipart data */
+        });
+    },
+    multipartFileHandler: function(part) {
+        part.on('data', function(data) {
+          /* do something with the multipart file data */
+        });
+    },
+    keepExtensions: true,
+    multiples: true,
+};
 
 // use morgan to log requests to the console
 server.use(morgan('dev'));
@@ -56,6 +76,8 @@ server.use(morgan('dev'));
 server.get(/\/public\/?.*/, restify.serveStatic({
     directory: __dirname
 }));
+
+
 
 
 server.get('api/auth/fake-user', userController.crtFakeUser);
@@ -73,8 +95,9 @@ server.get('/api/list/users', userController.getListUsers);
 
 
 // file upload
-server.post('api/user/avatar-upload', localFileUploadService.userAvatarUpload);
-server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
+// server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
+
+server.post('api/user/avatar-upload',localFileUploadService.userAvatarUpload);
 
 
 // pet api
@@ -130,56 +153,31 @@ io.sockets
 				socket.isDriver = data.isDriver;
 				console.log("[Driver Added] at " + socket.id);
 				socket.broadcast.to('customers').emit('driverAdded', drivers[socket.id]);
+
 			} else {
 				socket.join('customers');
 				console.log("[Customer Added] at " + socket.id);
 
 				var clients = io.sockets.adapter.rooms['customers'];
+				socket.emit('initDriverLoc', drivers); 
 
 				// the client is customers, send divers info to customers
-				socket.emit('initDriverLoc', drivers); 
-				// console.log(clients);
 
+				// console.log(clients);
 			}
   	});
 
 	  socket.on('book', function(customerData) {
-		var near = 0,length, nr = 0;
-		var at, id, key;
-		var lat1 = customerData.lat;
-		var long1 = customerData.lng;
-		var lat2, long2;
-		var details={};
-		if (customerData.type == 0) {
-			at = Object.keys(drivers);
-			id = at[0];
-			length = Object.keys(drivers).length;
-			console.log(length);
-
-			if (length == 0)
-				id = 0;
-			else if (length == 1) {
-				id = at[0];
+			var resData ={};
+			var matchedSocketId = locationService.getNearest(drivers, customerData);
+			console.log(matchedSocketId);
+			resData.id = matchedSocketId;	// id of booked car
+			if (matchedSocketId == 0) {
+				socket.emit('bookid', resData);
 			} else {
-				for (key in at) {
-					console.log('id=' + at[key])
-					lat2 = drivers[at[key]].latLong[0]
-					long2 = drivers[at[key]].latLong[1]
-					nr = locationService.calDistance(lat1, long1, lat2, long2);
-
-					if (nr < near) {
-						near = nr;
-						id = key;
-					}
-				}
+				socket.emit('bookid', resData);
+				socket.broadcast.to(matchedSocketId).emit('drivePath', customerData);
 			}
-		}
-
-			details[0]=id;	// id of booked car
-			details[1]=customerData[1];	//type 0 for cab 
-			socket.emit('bookid', details);
-			if(details[1]==0)
-			socket.to(id).emit('drivepath', customerData[0]);
 		});
 
 
