@@ -59,7 +59,7 @@ exports.postLogin = function(req, res, next) {
   
   User.findOne({
     email: req.params.email
-  }).select('+password').exec(function(err, user) {
+  }).select('+password').populate('pets', 'basic.name').exec(function(err, user) {
     if (err) res.json(err);
     else {
       if (!user) {
@@ -91,6 +91,7 @@ exports.postLogin = function(req, res, next) {
 // Create endpoint /api/auth/register for POSTS
 exports.postRegister = function(req, res, next) {
   // create a user
+
   var newUser = new User({ 
     email: req.params.email, 
     password: req.params.password,

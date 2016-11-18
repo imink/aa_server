@@ -26,7 +26,7 @@ var UserSchema = new mongoose.Schema({
   phone_no: Number,
   activated: Boolean,
   validate_code: Number,
-  pets: [mongoose.Schema.Types.ObjectId],
+  pets: [{type: mongoose.Schema.Types.ObjectId, ref: 'Pet'}],
 });
 
 
