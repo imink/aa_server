@@ -11,6 +11,7 @@ function calDistance(lat1, lon1, lat2, lon2) {
 }
 
 exports.getNearest = function(drivers, userData) {
+	console.log(drivers);
 	var distance = 0, minDistance = Number.MAX_SAFE_INTEGER;
 	var socketIds = Object.keys(drivers);
 	var matchedSocketId = 0;
@@ -18,13 +19,13 @@ exports.getNearest = function(drivers, userData) {
 		matchedSocketId = socketIds[0];
 	} else if (socketIds.length > 1) {
 		for (key in socketIds) {
-			var lat = drivers[socketIds[key]].latlong[0];
-			var lng = drivers[socketIds[key]].latlong[1];
+			var lat = drivers[socketIds[key]].latLong[0];
+			var lng = drivers[socketIds[key]].latLong[1];
 
-			distance = this.calDistance(userData.lat, userData.lng, lat, lng);
+			distance = calDistance(userData.lat, userData.lng, lat, lng);
 			if (distance < minDistance) {
 				minDistance = distance;
-				matchedSocketId = key;
+				matchedSocketId = socketIds[key];
 			}
 		}
 	}

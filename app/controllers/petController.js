@@ -4,6 +4,8 @@ var formatter = require('../utils/formatter');
 
 // model 
 var Pet = require('../models/pet');
+var User = require('../models/user');
+
 
 // get list of pets info
 exports.getPetList = function(req, res, next) {
@@ -39,9 +41,18 @@ exports.crtNewPet = function(req, res, next) {
 
 	newPet.masterId = req.auth._doc._id;
 
+	User.findOne({_id: req.auth._doc._id}, function(err, user) {
+		user.pets.push(newPet._id);
+		user.save(function(err, user) {
+			// update user pets attribute
+		});
+	});
+
 	newPet.save(function(err){
-		if (err) return next(err);
-    res.send(formatter.createRes(2110, 'create pet success', {'pet_id': newPet._id}));
+		if (err) res.json(err);
+		else {
+	    res.send(formatter.createRes(2110, 'create pet success', {'pet_id': newPet._id}));			
+		}
 	});
 	// return next();
 };

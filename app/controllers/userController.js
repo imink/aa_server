@@ -77,7 +77,6 @@ exports.postLogin = function(req, res, next) {
 
               user = user.toObject();
               delete user.password;
-              console.log(user);
               res.json(formatter.createRes(2004, 'success', {'token':token, 'user':user}));
             }  
           } 

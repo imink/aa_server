@@ -95,8 +95,7 @@ server.get('/api/list/users', userController.getListUsers);
 
 
 // file upload
-// server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
-
+server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
 server.post('api/user/avatar-upload',localFileUploadService.userAvatarUpload);
 
 
