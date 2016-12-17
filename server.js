@@ -18,6 +18,7 @@ var userController = require('./app/controllers/userController');
 var petController = require('./app/controllers/petController');
 var transactionController = require('./app/controllers/transactionController');
 var driverController = require('./app/controllers/driverController');
+var adminController = require('./app/controllers/adminController');
 
 // middleware
 var authMiddleware = require('./app/middleware/authMiddleware');
@@ -41,7 +42,23 @@ var server = restify.createServer({
 	
 var io = socketio.listen(server.server);
 
-// var ioClient = socketClient.connect("http://127.0.0.1:8080");
+// // var ioClient = socketClient.connect("http://127.0.0.1:8080");
+// server.use(
+//   function crossOrigin(req,res,next){
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+//     return next();
+//   }
+// );
+server.use(restify.CORS());
+
+server.opts(/.*/, function (req,res,next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", req.header("Access-Control-Request-Method"));
+    res.header("Access-Control-Allow-Headers", req.header("Access-Control-Request-Headers"));
+    res.send(200);
+    return next();
+});
 
 server.use(restify.queryParser()); // parse the req url
 // server.use(restify.bodyParser()); // parse the post body into query
@@ -86,6 +103,10 @@ server.post('api/auth/login', userController.postLogin);
 server.get('api/auth/get-sms', userController.getSms);
 server.post('api/auth/forgot-password', userController.forgotPassword);
 
+// admin model api
+server.post('/api/admin/register', adminController.postRegister);
+
+
 server.use(authMiddleware.validateUser);
 server.get('api/auth/logout', userController.getLogout);
 server.get('api/user/profile', userController.getProfile);
@@ -94,19 +115,29 @@ server.post('api/auth/update-password', userController.updatePassword);
 server.get('/api/list/users', userController.getListUsers);
 
 
+// admin user
+server.get('api/user/:id', userController.getUserById);
+server.post('api/user/update', userController.updateUserProfile);
+
+
+
 // file upload
 server.post('api/pet/avatar-upload/:id', localFileUploadService.petAvatarUpload);
 server.post('api/user/avatar-upload',localFileUploadService.userAvatarUpload);
 
 
 // pet api
-server.get('/api/my/pet/list', petController.getPetList);
+server.get('/api/my/pet/list', petController.getMyPetList);
 server.post('/api/my/pet/new', petController.crtNewPet);
 server.get('api/pet/fake-pet', petController.crtFakePet);
-server.get('api/my/pet/:id', petController.getPet);
-server.put('api/my/pet/:id', petController.updatePet);
+server.get('api/my/pet/:id', petController.getMyPetById);
+server.put('api/my/pet/:id', petController.updateMyPetById);
 server.del('api/my/pet/:id', petController.deletePet);
 
+// pet admin
+server.get('api/admin/all/pet/list', petController.getAllPetList);
+server.get('api/admin/pet/:id', petController.getPetById);
+server.put('api/admin/pet/:id', petController.updatePetById);
 
 // transaction api
 server.get('/api/transactions/list', transactionController.getTransList);
@@ -125,8 +156,6 @@ server.del('api/driver/:id', driverController.deleteDriver);
 server.post('/api/driver/new', driverController.crtNewDriver);
 server.get('api/driver/:id', driverController.getDriver);
 server.put('api/driver/:id', driverController.updateDriver);
-
-
 
 
 

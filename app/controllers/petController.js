@@ -6,23 +6,50 @@ var formatter = require('../utils/formatter');
 var Pet = require('../models/pet');
 var User = require('../models/user');
 
+exports.getAllPetList = function(req, res, next) {
+	// check if admin login
+	Pet.find({}, function(err, pets) {
+		if (err) return next(err);
+		else {
+			if (pets) {
+				res.json(formatter.createRes(2142, 'get all pets list successfully', pets));
+			} else {
+				res.json(formatter.createRes(2143, 'get all pets list failed', pets));
+			}
+		}	
+	});
+}
+
+exports.updatePetById = function(req, res, next) {
+	Pet.findOneAndUpdate({_id: req.params.id}, function(err, pet) {
+		if (err) return next(err);
+		else {
+			if (pet) {
+				res.json(formatter.createRes(2122, 'update pet success', pet));
+			} else {
+				res.json(formatter.createRes(2123, 'no pet such', ''));
+			}
+		}
+	});
+}
+
 
 // get list of pets info
-exports.getPetList = function(req, res, next) {
+exports.getMyPetList = function(req, res, next) {
 	Pet.find({masterId: req.auth._doc._id}, function(err, pets) {
 		if (err) return next(err);
 		else {
 			if (pets) {
-				res.json(formatter.createRes(2111, 'get pet success', pets));
+				res.json(formatter.createRes(2140, 'get pet success', pets));
 			} else {
-				res.json(formatter.createRes(2112, 'pet not found', ''));
+				res.json(formatter.createRes(2141, 'pet not found', ''));
 			}
 		}		
 	});
 	// return next();
-};
+}
 
-exports.getPet = function(req, res, next) {
+exports.getMyPetById = function(req, res, next) {
 	Pet.findOne({_id: req.params.id, masterId: req.auth._doc._id}, function(err, pet){
 		if (err) return next(err);
 		else {
@@ -33,7 +60,21 @@ exports.getPet = function(req, res, next) {
 			}
 		}
 	});
-};
+}
+
+exports.getPetById = function(req, res, next) {
+	Pet.findOne({_id: req.params.id}, function(err, pet) {
+		if (err) return next(err);
+		else {
+			if (pet) {
+				res.json(formatter.createRes(2144, 'get pet by id success', pet));
+			} else {
+				res.json(formatter.createRes(2145, 'get pet by id fail', ''));
+			}
+		}
+	});
+}
+
 
 // create a new pet
 exports.crtNewPet = function(req, res, next) {
@@ -55,14 +96,10 @@ exports.crtNewPet = function(req, res, next) {
 		}
 	});
 	// return next();
-};
+}
 
 // update pet info
-exports.updatePet = function(req, res, next) {
-	// console.log(req.body);
-
-	// var updatedPet = new Pet(req.body);
-
+exports.updateMyPetById = function(req, res, next) {
 
 	Pet.findOneAndUpdate({_id: req.params.id, masterId: req.auth._doc._id}, {$set: req.body}, {new: true}, function(err, pet) {
 		if (err) return next(err);

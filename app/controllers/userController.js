@@ -90,7 +90,7 @@ exports.postLogin = function(req, res, next) {
 // Create endpoint /api/auth/register for POSTS
 exports.postRegister = function(req, res, next) {
   // create a user
-
+  //  validation
   var newUser = new User({ 
     email: req.params.email, 
     password: req.params.password,
@@ -146,7 +146,7 @@ exports.forgotPassword = function(req, res, next) {
   User.findOne({email: req.params.email}, function(err, user) {
     if (err) return next(err);
     if (!user) {
-      res.json(formatter.createRes(2021, 'email not match', ''));
+      res.json(formatter.createRes(2021, 'email nextiot match', ''));
     } else {
       // match the user, send email
     }
@@ -162,12 +162,40 @@ exports.getListUsers = function(req, res, next) {
   // return next();
 };
 
+exports.getUserById = function(req, res, next) {
+  User.findOne({'_id': req.params.id}, function(err, user) {
+    if (err) res.json(err);
+    else {
+      if (user) {
+        res.send(formatter.createRes(2101, 'success', user));
+      } else {
+        res.json(formatter.createRes(2002, 'user not found', ''));
+      }
+    }
+  });
+}
+
+
 exports.getMyProfile = function(req, res, next) {
-  User.find({}, function(err, users) {
+  User.findOne({'_id': req.auth._doc._id}, function(err, users) {
     res.json(formatter.createRes(2101, 'success', users));
   });
 };
 
+exports.updateUserProfile = function(req, res, next) {
+  console.log(req.body);
+  // {new: true} force return the updated one 
+  User.findOneAndUpdate({'_id': req.params._id}, {$set: req.body}, {new: true}, function(err, user){
+    if (err) return res.json(err);
+    else {
+      if (user) {
+        res.json(formatter.createRes(2114, 'update user successfully', user));
+      } else {
+        res.json(formatter.createRes(2112, 'user not found', ''));
+      }
+    }
+  })
+}
 
 
 exports.getSms = function(req, res, next) {
