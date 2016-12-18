@@ -9,13 +9,17 @@ var Transaction = require('../models/transaction');
 
 
 exports.crtTran = function(res, req, next) {
+	//validation
 	var newTran = new Transaction(req.params);
-	newTran.start_ts = Date.now();
+	newTran.start_time = Date.now();
 	newTran.status = 1; // doing
 	newTran.save(function(err) {
 		if (err) return	next(err);
-		data = newTran._id; // tran ID
-		res.send(formatter.createRes(3001, 'start transaction ...', data));
+		else {
+			data = newTran._id; // tran ID
+			// return the socket id
+			res.send(formatter.createRes(3001, 'start transaction ...', newTran));
+		}
 	});
 };
 

@@ -1,23 +1,27 @@
-// get an instance of mongoose and mongoose.Schema
+  // get an instance of mongoose and mongoose.Schema
 var mongoose = require('mongoose');
 
 
 
 var TransactionSchema = new mongoose.Schema({
-  duration: Number,
-  start_ts: Date,
-  end_ts: Date,
-  type: Number, 
+  duration: String,
+  start_time: Date,
+  end_time: Date,
   pickup_addr: String,
   dropoff_addr: String,
-  dogs: [mongoose.Schema.Types.ObjectId],
-  userId: mongoose.Schema.Types.ObjectId,
-  driverId: mongoose.Schema.Types.ObjectId,
+  pets: [mongoose.Schema.Types.ObjectId],
+  user_id: mongoose.Schema.Types.ObjectId,
+  driver_id: mongoose.Schema.Types.ObjectId,
+  status: String,
   fee: Number,
-  discount: Number,
-  totalFee: Number,
-  status: Number
-});
+  status: Number,
+  payment:mongoose.Schema.Types.ObjectId,
+  socket: String
+},
+{
+  timestamps: { createdAt: 'created_at' }
+}
+);
 
 
 // // Execute before each user.save() call

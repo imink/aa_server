@@ -66,24 +66,6 @@ server.use(restify.jsonBodyParser());
 			// .use(restify.urlEncodedBodyParser()); // parse the post body into query
 
 
-var options = {
-	  maxBodySize: 0,
-    mapParams: true,
-    mapFiles: false,
-    overrideParams: false,
-    multipartHandler: function(part) {
-        part.on('data', function(data) {
-          /* do something with the multipart data */
-        });
-    },
-    multipartFileHandler: function(part) {
-        part.on('data', function(data) {
-          /* do something with the multipart file data */
-        });
-    },
-    keepExtensions: true,
-    multiples: true,
-};
 
 // use morgan to log requests to the console
 server.use(morgan('dev'));
@@ -140,8 +122,8 @@ server.get('api/admin/pet/:id', petController.getPetById);
 server.put('api/admin/pet/:id', petController.updatePetById);
 
 // transaction api
-server.get('/api/transactions/list', transactionController.getTransList);
-server.post('/api/transaction/new', transactionController.crtTran);
+server.get('/api/transactions/history', transactionController.getTransList);
+server.post('/api/transaction/new', transactionController.crtTran); //start new service
 server.get('api/transaction/:id', transactionController.getTran);
 server.put('api/transaction/:id', transactionController.updateTran);
 server.del('api/transaction/:id', transactionController.deleteTran);

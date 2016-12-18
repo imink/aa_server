@@ -42,7 +42,7 @@ exports.userAvatarUpload = function(req, res, next) {
 		else {
 			// cdn uploader
 			cloudinary.uploader.upload(req.file.path, function(result) {
-				console.log(result);
+				// console.log(result);
 				User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: result.url}, {new: true}, function(err, user) {
 					if (err) res.json(err);
 					else {
@@ -61,10 +61,26 @@ exports.userAvatarUpload = function(req, res, next) {
 
 
 exports.petAvatarUpload = function(req, res, next) {
-	var upload = multer({ storage: storage}).single('pet');
+	var upload = multer({ storage: storage, limits: limits, fileFilter: fileFilter}).single('pet');
 
 	upload(req, res, function(err){
-		if (err) return next(err);
-		res.send(formatter.createRes(2015, 'user avatar upload successfully', req.file.filename));
+		if (req.fileValidationError) res.json({err:req.fileValidationError});
+		else if (err) return next(err);
+		else {
+			// cdn uploader
+			cloudinary.uploader.upload(req.file.path, function(result) {
+				// console.log(result);
+				Pet.findOneAndUpdate({_id: req.params.id, masterId: req.auth._doc._id}, {'basic.avatar': result.url}, {new: true}, function(err, pet) {
+					if (err) res.json(err);
+					else {
+						if (pet) {
+				  		res.send(formatter.createRes(2122, 'pet avatar upload success', pet));					
+						} else {
+			        res.json(formatter.createRes(2122, 'pet avatar upload success', {url: result.url}));	
+						}
+					}
+				});				
+			});
+		}
 	}); 		
 };
