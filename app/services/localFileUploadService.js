@@ -68,18 +68,23 @@ exports.petAvatarUpload = function(req, res, next) {
 		else if (err) return next(err);
 		else {
 			// cdn uploader
+			// console.log(req.params.id + 'id');
 			cloudinary.uploader.upload(req.file.path, function(result) {
 				// console.log(result);
-				Pet.findOneAndUpdate({_id: req.params.id, masterId: req.auth._doc._id}, {'basic.avatar': result.url}, {new: true}, function(err, pet) {
-					if (err) res.json(err);
-					else {
-						if (pet) {
-				  		res.send(formatter.createRes(2122, 'pet avatar upload success', pet));					
-						} else {
-			        res.json(formatter.createRes(2122, 'pet avatar upload success', {url: result.url}));	
-						}
-					}
-				});				
+				if (!req.params.id) {
+	        res.json(formatter.createRes(2122, 'pet avatar upload success', {url: result.url}));	
+				} else {
+						Pet.findOneAndUpdate({_id: req.params.id, masterId: req.auth._doc._id}, {'basic.avatar': result.url}, {new: true}, function(err, pet) {
+							if (err) res.json(err);
+							else {
+								if (pet) {
+						  		res.send(formatter.createRes(2122, 'pet avatar upload success', pet));					
+								} else {
+					        res.json(formatter.createRes(2123, 'pet avatar upload fail', ''));	
+								}
+							}
+						});				
+				}				
 			});
 		}
 	}); 		

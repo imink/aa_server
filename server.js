@@ -88,7 +88,6 @@ server.post('api/auth/forgot-password', userController.forgotPassword);
 // admin model api
 server.post('/api/admin/register', adminController.postRegister);
 
-
 server.use(authMiddleware.validateUser);
 server.get('api/auth/logout', userController.getLogout);
 server.get('api/user/profile', userController.getProfile);
