@@ -43,7 +43,7 @@ exports.userAvatarUpload = function(req, res, next) {
 			// cdn uploader
 			cloudinary.uploader.upload(req.file.path, function(result) {
 				console.log(result);
-				User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: result.url}, function(err, user) {
+				User.findOneAndUpdate({_id: req.auth._doc._id}, {avatar: result.url}, {new: true}, function(err, user) {
 					if (err) res.json(err);
 					else {
 						if (user) {
