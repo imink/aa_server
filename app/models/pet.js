@@ -40,8 +40,12 @@ var PetSchema = new mongoose.Schema({
       name: String,
       number: String,
     }
+  },
+},
+  {
+  timestamps: { createdAt: 'created_at' }
   }
-});
+);
 
 
 // // Execute before each user.save() call

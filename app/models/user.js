@@ -27,7 +27,11 @@ var UserSchema = new mongoose.Schema({
   activated: Boolean,
   validate_code: Number,
   pets: [{type: mongoose.Schema.Types.ObjectId, ref: 'Pet'}],
-});
+},
+  {
+  timestamps: { createdAt: 'created_at' }
+  }
+);
 
 
 // Execute before each user.save() call
