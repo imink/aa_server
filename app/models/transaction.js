@@ -16,7 +16,7 @@ var TransactionSchema = new mongoose.Schema({
   fee: Number,
   status: Number,
   payment:mongoose.Schema.Types.ObjectId,
-  socket: String
+  socket_ns: String
 },
 {
   timestamps: { createdAt: 'created_at' }

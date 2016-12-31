@@ -31,3 +31,22 @@ exports.getNearest = function(drivers, userData) {
 	}
 	return matchedSocketId;
 }
+
+function randomFloat(low, high) {
+	var low = 0.01;
+	var high = 0.02;
+	return (Math.random() * (high - low) + low);
+}
+
+exports.crtFakeDrivers = function() {
+	var numOfDrivers = 3;
+	var ucl = {lat: 51.524559, lng: -0.13404};
+	var drivers = {};
+	for (i = 0; i < numOfDrivers; i ++) {
+		var driverMarker = {latLng: [nationalGallery.lat + randomFloat(0.0, 0.2), ucl.lng + randomFloat(0.0, 0.2)]};
+		drivers.push(driverMarker);
+	}
+	return drivers;
+}
+
+

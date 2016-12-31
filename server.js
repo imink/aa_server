@@ -13,6 +13,7 @@ var socketioJwt = require('socketio-jwt');
 
 
 
+
 // controller
 var userController = require('./app/controllers/userController');
 var petController = require('./app/controllers/petController');
@@ -22,13 +23,13 @@ var adminController = require('./app/controllers/adminController');
 
 // middleware
 var authMiddleware = require('./app/middleware/authMiddleware');
-
+var socketioMiddleware = require('./app/middleware/socketioMiddleware');
 
 // service
 var smsService = require('./app/services/authSmsService');
 var localFileUploadService = require('./app/services/localFileUploadService');
 var locationService = require('./app/services/locationService');
-
+var realtimeDispatchingService = require('./app/services/realtimeDispatchingService');
 
 var host = process.env.HOST || 'localhost';
 var port = process.env.PORT || '8080';
@@ -42,7 +43,6 @@ var server = restify.createServer({
 	
 var io = socketio.listen(server.server);
 
-// // var ioClient = socketClient.connect("http://127.0.0.1:8080");
 // server.use(
 //   function crossOrigin(req,res,next){
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -63,7 +63,6 @@ server.opts(/.*/, function (req,res,next) {
 server.use(restify.queryParser()); // parse the req url
 // server.use(restify.bodyParser()); // parse the post body into query
 server.use(restify.jsonBodyParser());
-			// .use(restify.urlEncodedBodyParser()); // parse the post body into query
 
 
 
@@ -122,12 +121,13 @@ server.put('api/admin/pet/:id', petController.updatePetById);
 
 // transaction api
 server.get('/api/transactions/history', transactionController.getTransList);
-server.post('/api/transaction/new', transactionController.crtTran); //start new service
+server.post('/api/transaction/new', socketioMiddleware.addIO(io), transactionController.crtTran); //start new service, open a nampespace
+// server.post('/api/transaction/new', transactionController.crtTran); //start new service
 server.get('api/transaction/:id', transactionController.getTran);
 server.put('api/transaction/:id', transactionController.updateTran);
-server.del('api/transaction/:id', transactionController.deleteTran);
-server.get('api/transaction/:id/cancel', transactionController.cancelTran);
-server.get('api/transaction/:id/finish', transactionController.endTran);
+server.del('api/transaction/:id', transactionController.deleteTran); 
+server.get('api/transaction/:id/cancel', socketioMiddleware.addIO(io), transactionController.cancelTran);  // close the socket
+server.get('api/transaction/:id/finish', socketioMiddleware.addIO(io), transactionController.endTran); // close the socket
 
 
 // driver api
@@ -142,9 +142,35 @@ server.put('api/driver/:id', driverController.updateDriver);
 
 
 var drivers = {};
+var users = {};
 
 
-io.sockets
+
+
+
+
+	// var ns = "random2";
+	// var newNs = io.of('/' + ns);
+	// // var userSocketId = "";
+	// // var driverSocketId = "";
+
+	// newNs.on('connection', function(socket){
+ //  	console.log('pair connected 2');
+ //  	// register event listner 
+ //  	// realtimeDispatchingService.initPair(socket);
+	// 	// realtimeDispatchingService.updateDriverLoc(socket);
+	// 	// realtimeDispatchingService.updateUserLoc(socket);
+	// 	// realtimeDispatchingService.updatePetStatus(socket);
+	// 	realtimeDispatchingService.closeSocket(socket, drivers, 2);
+	// });
+
+
+
+
+
+// io.sockets
+var commonroom = "commonroom";
+	io.of('/' + commonroom)
   .on('connection', socketioJwt.authorize({
     secret: secret,
     timeout: 1000 // 15 seconds to send the authentication message
@@ -152,76 +178,61 @@ io.sockets
   .on('authenticated', function(socket) {
     //this socket is authenticated, we are good to handle more events from it.
 		// console.log('connected & authenticated: ' + JSON.stringify(socket.decoded_token._doc._id));
-	  socket.on('init', function(data) {
-			if (data.isDriver) {
-				drivers[socket.id] = {
-					id: socket.id,
-					latLong: data.latLong
+	  // socket.on('init', function(data) {
+			// if (data.isDriver) {
+			// 	drivers[socket.id] = {
+			// 		id: socket.id,
+			// 		latLng: data.latLng
 
-				};
-				socket.isDriver = data.isDriver;
-				console.log("[Driver Added] at " + socket.id);
-				socket.broadcast.to('customers').emit('driverAdded', drivers[socket.id]);
+			// 	};
+			// 	socket.isDriver = data.isD	river;
+			// 	console.log("[Driver Added] at " + socket.id);
+			// 	socket.broadcast.to('customers').emit('driverAdded', drivers[socket.id]);
 
-			} else {
-				socket.join('customers');
-				console.log("[Customer Added] at " + socket.id);
+			// } else {
+			// 	socket.join('customers');
+			// 	console.log("[Customer Added] at " + socket.id);
 
-				var clients = io.sockets.adapter.rooms['customers'];
-				socket.emit('initDriverLoc', drivers); 
+			// 	var clients = io.sockets.adapter.rooms['customers'];
+			// 	socket.emit('initDriverLoc', drivers); 
 
-				// the client is customers, send divers info to customers
+			// 	// the client is customers, send divers info to customers
 
-				// console.log(clients);
-			}
-  	});
+			// 	// console.log(clients);
+			// }
+  	// });
+  	console.log('[Common Room] Authenticated');
+  	realtimeDispatchingService.initUser(socket, users, drivers);
+  	realtimeDispatchingService.initDriver(socket, drivers);
+  	realtimeDispatchingService.updateUserListLoc(socket, users);
+  	realtimeDispatchingService.updateDriverListLoc(socket, drivers);
+  	realtimeDispatchingService.closeSocket(socket, drivers, 1);
 
-	  socket.on('book', function(customerData) {
-			var resData ={};
-			var matchedSocketId = locationService.getNearest(drivers, customerData);
-			console.log(matchedSocketId);
-			resData.id = matchedSocketId;	// id of booked car
-			if (matchedSocketId == 0) {
-				socket.emit('bookid', resData);
-			} else {
-				socket.emit('bookid', resData);
-				socket.broadcast.to(matchedSocketId).emit('drivePath', customerData);
-			}
-		});
-
-
-
-
-	  socket.on('locChanged', function(data) {
-			drivers[socket.id] = {
-				id: socket.id,
-				latLong: data.latLong
-			}
-
-			socket.broadcast.emit('driverLocChanged', {
-				id: socket.id,
-				latLong: data.latLong
-			})
-		});
-
-		socket.on('disconnect', function() {
-			if (socket.isDriver) {
-				delete drivers[socket.id];			
-				console.log("[Driver Disconnected] at: " + socket.id);
-				socket.broadcast.to('customers').emit('driverRemoved', drivers[socket.id]);
-			}
-			 else {
-				console.log("[Customer Disconnected] at: " + socket.id);
-			}
-		});
-
-
+		//  socket.on('book', function(customerData) {
+		// 	var resData ={};
+		// 	var matchedSocketId = locationService.getNearest(drivers, customerData);
+		// 	console.log(matchedSocketId);
+		// 	resData.id = matchedSocketId;	// id of booked car
+		// 	if (matchedSocketId == 0) {
+		// 		socket.emit('bookid', resData);
+		// 	} else {
+		// 		socket.emit('bookid', resData);
+		// 		socket.broadcast.to(matchedSocketId).emit('drivePath', customerData);
+		// 	}    
+		// });
   });
 
-
-
-
-
+var pairNs = "random";
+var pairNs = io.of('/' + pairNs);
+pairNs.on('connection', function(socket){
+	console.log('pair connected 1');
+	// register event listner 
+	realtimeDispatchingService.initPair(socket);
+	realtimeDispatchingService.updateDriverLoc(socket);
+	realtimeDispatchingService.updateUserLoc(socket);
+	realtimeDispatchingService.updatePetStatus(socket);
+	realtimeDispatchingService.closeSocket(socket, drivers, 2);
+});
 
 
 
