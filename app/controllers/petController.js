@@ -21,7 +21,7 @@ exports.getAllPetList = function(req, res, next) {
 }
 
 exports.updatePetById = function(req, res, next) {
-	Pet.findOneAndUpdate({_id: req.params.id}, function(err, pet) {
+	Pet.findOneAndUpdate({_id: req.params.id}, {$set: req.body}, {new: true}, function(err, pet) {
 		if (err) return next(err);
 		else {
 			if (pet) {

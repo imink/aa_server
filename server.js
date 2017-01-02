@@ -125,15 +125,19 @@ server.post('/api/transaction/new', socketioMiddleware.addIO(io), transactionCon
 // server.post('/api/transaction/new', transactionController.crtTran); //start new service
 server.get('api/transaction/:id', transactionController.getTran);
 server.put('api/transaction/:id', transactionController.updateTran);
-server.del('api/transaction/:id', transactionController.deleteTran); 
 server.get('api/transaction/:id/cancel', socketioMiddleware.addIO(io), transactionController.cancelTran);  // close the socket
 server.get('api/transaction/:id/finish', socketioMiddleware.addIO(io), transactionController.endTran); // close the socket
+
+// transaction admin
+server.get('api/admin/transaction/:id', transactionController.getTranById);
+server.del('api/admin/transaction/:id', transactionController.deleteTran); 
+
+
 
 
 // driver api
 server.get('/api/driver/list/:id', driverController.getDriverList);
 server.del('api/driver/:id', driverController.deleteDriver);
-
 server.post('/api/driver/new', driverController.crtNewDriver);
 server.get('api/driver/:id', driverController.getDriver);
 server.put('api/driver/:id', driverController.updateDriver);

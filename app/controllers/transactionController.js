@@ -7,18 +7,28 @@ var rdService = require('../services/realtimeDispatchingService');
 // model 
 var Transaction = require('../models/transaction');
 
+// services
+var locationService = require('../services/locationService');
+
 
 exports.crtTran = function(req, res, next) {
 	//validation
-	console.log("ok");
-
 	var newTran = new Transaction(req.params);
 	newTran.start_time = Date.now();
 	newTran.status = "1"; // doing
+	newTran.user_id = req.auth._doc._id;
+	// open the ns
 	// var ns = rdService.crtNewNameSpace(req.io);
 	rdService.crtNewNameSpace(req.io);
 	var ns = "random";
 	newTran.socket_ns = ns;
+
+	// get the nearest driver
+	var driver = {};
+	locationService.getNearest(function(driver) {
+		console.log(driver);
+	});
+
 	newTran.save(function(err) {
 		if (err) return	next(err);
 		else {
@@ -54,13 +64,13 @@ exports.cancelTran = function(req, res, next) {
 
 
 exports.updateTran = function(req, res, next) {
-	Transaction.findOneAndUpdate({_id: req.params.id}, {$set: req.body}, {new: true}, function(err, transcation) {
+	Transaction.findOneAndUpdate({_id: req.params.id}, {$set: req.body}, {new: true}, function(err, transaction) {
 		if (err) return next(err);
 		else {
-			if (transcation) {
-        res.json(formatter.createRes(2114, 'update user successfully', user));
+			if (transaction) {
+        res.json(formatter.createRes(2114, 'update transactions successfully', transaction));
 			} else {
-
+				res.json(formatter.createRes(3002, 'no current transaction', ''));
 			}
 		}
 	});
@@ -75,8 +85,20 @@ exports.getTran = function(req, res, next) {
 			res.json(formatter.createRes(3002, 'no current transaction', ''));	
 		}
 	});
-
 };
+
+
+exports.getTranById = function(req, res, next) {
+	Transaction.findOne({_id: req.params.id}, function(err, transaction) {
+		if (err) return next(err);
+		if (transaction) {
+			res.json(formatter.createRes(3002, 'get transaction info', transaction));
+		} else {
+			res.json(formatter.createRes(3002, 'no current transaction', ''));	
+		}
+	});
+}
+
 exports.deleteTran = function(req, res, next) {
 	Transaction.findOneAndRemove({_id: req.params.id, userId: req.params.uid}, function(err, transaction) {
 		if (err) return next(err);

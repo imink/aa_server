@@ -1,4 +1,4 @@
-
+var _this = this;
 
 function calDistance(lat1, lon1, lat2, lon2) {
 	var p = 0.017453292519943295;
@@ -10,8 +10,9 @@ function calDistance(lat1, lon1, lat2, lon2) {
 	return 12742 * Math.asin(Math.sqrt(a));
 }
 
-exports.getNearest = function(drivers, userData) {
+exports.getNearest = function(userData) {
 	console.log(drivers);
+	var drivers = _this.crtFakeDrivers();
 	var distance = 0, minDistance = Number.MAX_SAFE_INTEGER;
 	var socketIds = Object.keys(drivers);
 	var matchedSocketId = 0;

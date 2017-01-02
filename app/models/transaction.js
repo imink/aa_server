@@ -11,7 +11,12 @@ var TransactionSchema = new mongoose.Schema({
   dropoff_addr: String,
   pets: [mongoose.Schema.Types.ObjectId],
   user_id: mongoose.Schema.Types.ObjectId,
-  driver_id: mongoose.Schema.Types.ObjectId,
+  driver: {
+    id: mongoose.Schema.Types.ObjectId,
+    socket_id: String,
+    latLng: [Number],
+    info: String
+  },
   status: String,
   fee: Number,
   status: Number,
