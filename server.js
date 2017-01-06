@@ -7,9 +7,8 @@ var formatter = require('./app/utils/formatter');
 var socketio = require('socket.io');
 var socketClient = require('socket.io-client');
 var secret = config.secret;
-
 var socketioJwt = require('socketio-jwt');
-
+var redis = require("redis");
 
 
 
@@ -42,6 +41,34 @@ var server = restify.createServer({
 });
 	
 var io = socketio.listen(server.server);
+var redisClient = redis.createClient();
+
+redisClient.on("error", function (err) {
+    console.log("Redis Error " + err);
+});
+
+redisClient.on("connect", function(){
+    // start server();
+    console.log("Start Redis");
+})
+
+// create fake drivers
+// console.log(JSON.stringify(locationService.crtFakeDrivers()));
+var drivers = locationService.crtFakeDrivers();
+for (i = 0; i < drivers.length; i ++) {
+	redisClient.hset('drivers', i, JSON.stringify(drivers[i]), function(err) {
+		if (err) console.log("Add drivers" + err);
+	});
+}
+// redisClient.hset('drivers', 1, 'happy', function(err, obj) {
+
+// });
+// var drivers = {};
+// redisClient.hgetall('drivers', function(err, obj) {
+// 	drivers = obj;
+// 	console.log(drivers);
+// })
+// var drivers = JSON.parse(redisClient.h)
 
 // server.use(
 //   function crossOrigin(req,res,next){
@@ -121,7 +148,7 @@ server.put('api/admin/pet/:id', petController.updatePetById);
 
 // transaction api
 server.get('/api/transactions/history', transactionController.getTransList);
-server.post('/api/transaction/new', socketioMiddleware.addIO(io), transactionController.crtTran); //start new service, open a nampespace
+server.post('/api/transaction/new', socketioMiddleware.addIO(io, redisClient), transactionController.crtTran); //start new service, open a nampespace
 // server.post('/api/transaction/new', transactionController.crtTran); //start new service
 server.get('api/transaction/:id', transactionController.getTran);
 server.put('api/transaction/:id', transactionController.updateTran);
@@ -206,11 +233,11 @@ var commonroom = "commonroom";
 			// }
   	// });
   	console.log('[Common Room] Authenticated');
-  	realtimeDispatchingService.initUser(socket, users, drivers);
-  	realtimeDispatchingService.initDriver(socket, drivers);
-  	realtimeDispatchingService.updateUserListLoc(socket, users);
-  	realtimeDispatchingService.updateDriverListLoc(socket, drivers);
-  	realtimeDispatchingService.closeSocket(socket, drivers, 1);
+  	realtimeDispatchingService.initUser(socket, redisClient);
+  	realtimeDispatchingService.initDriver(socket, redisClient);
+  	realtimeDispatchingService.updateUserListLoc(socket, redisClient);
+  	realtimeDispatchingService.updateDriverListLoc(socket, redisClient);
+  	realtimeDispatchingService.closeSocket(socket, redisClient, 1);
 
 		//  socket.on('book', function(customerData) {
 		// 	var resData ={};

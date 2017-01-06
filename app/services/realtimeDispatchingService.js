@@ -44,23 +44,25 @@ exports.updateUserLoc = function(socket) {
 	});
 }
 
-exports.updateDriverListLoc = function(socket, drivers) {
+exports.updateDriverListLoc = function(socket, redisClient) {
 	socket.on('updateDriverListLoc', function(data) {
 		console.log('updateDriverListLoc');
 		
-		drivers[socket.id] = {
+		var driver= {
 			id: socket.id,
 			latLng: data.latLng
-		}
-
-		socket.broadcast.to('customers').emit('updateDriverListLoc', {
-			id: socket.id,
-			latLng: data.latLng
-		})
+		};
+		
+		redisClient.hset('drivers', socket.id, JSON.stringify(driver), function(err, obj) {
+				socket.broadcast.to('customers').emit('updateDriverListLoc', {
+				id: socket.id,
+				latLng: data.latLng
+			});		
+		});
 	});
 }
 
-exports.updateUserListLoc = function(socket, users) {
+exports.updateUserListLoc = function(socket, redisClient) {
 // update user list loc from view of drivers                                                
 }
 
@@ -71,31 +73,40 @@ exports.updatePetStatus = function(socket) {
 	});
 }
 
-exports.initUser = function(socket, users, drivers) {
+exports.initUser = function(socket, redisClient) {
 	socket.on('initUser', function(data) {
 		socket.join('customers');
 		console.log("[Customer Added] at " + socket.id);
-		users[socket.id] = {
-			id:socket.id,
-			latLng: data.latLng
-		}
-		socket.emit('initDriverLocList', drivers); 
+		var user = {};
+		user.id = socket.id;
+		user.latLng = data.latLng;
+		
+		redisClient.hset('users', socket.id, JSON.stringify(user), function(err) {
+			if (err) console.log(err);
+		});
+
+		redisClient.hgetall('drivers', function(err, obj) {
+			socket.emit('initDriverLocList', obj); 
+		});
 	});
 }
 
-exports.initDriver = function(socket, drivers) {
+exports.initDriver = function(socket, redisClient) {
 	socket.on('initDriver', function(data) {
-		drivers[socket.id] = {
+		var driver = {
 			id: socket.id,
-			latLng: data.latLng
-		}
-		socket.isDriver = true;
-		console.log("[Driver Added] at " + socket.id);
-		socket.broadcast.to('customers').emit('addDrivers', drivers[socket.id]);  		
+			latLng: data.latLng,
+			isDriver: true
+		};
+		redisClient.hset('drivers', socket.id, JSON.stringify(driver), function(err, obj) {
+			socket.isDriver = true;
+			console.log("[Driver Added] at " + socket.id);
+			socket.broadcast.to('customers').emit('addDrivers', driver);  	
+		});
 	});
 }
 
-exports.closeSocket = function(socket, drivers, num) {
+exports.closeSocket = function(socket, redisClient, num) {
 	socket.on('disconnect', function() {
 		console.log("num: " + num);
 		if (socket.isDriver) {

@@ -42,9 +42,9 @@ function randomFloat(low, high) {
 exports.crtFakeDrivers = function() {
 	var numOfDrivers = 3;
 	var ucl = {lat: 51.524559, lng: -0.13404};
-	var drivers = {};
+	var drivers = [];
 	for (i = 0; i < numOfDrivers; i ++) {
-		var driverMarker = {latLng: [nationalGallery.lat + randomFloat(0.0, 0.2), ucl.lng + randomFloat(0.0, 0.2)]};
+		var driverMarker = {latLng: [ucl.lat + randomFloat(0.0, 0.2), ucl.lng + randomFloat(0.0, 0.2)]};
 		drivers.push(driverMarker);
 	}
 	return drivers;
