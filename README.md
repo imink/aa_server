@@ -21,7 +21,11 @@ AlwaysAround 是一个类 Uber 的宠物托管服务App，我们提供给用户�
 - 服务器采用 Nginx 配合 [PM2](https://github.com/Unitech/pm2) 部署在 DigitalOcean 上，并且实现自动脚本部署
 
 #####通信服务原型
-![core_service](http://om73fjcgf.bkt.clouddn.com/11478897778_.pic_hd_copy.jpg)
+![core_service](http://om73fjcgf.bkt.clouddn.com/11478897778_.pic_hd_copy.jpg?imageMogr2/auto-orient/thumbnail/x700/blur/1x0/quality/75|imageslim)
+
+##### 后台管理界面（托管服务模拟）
+![core_service](http://om73fjcgf.bkt.clouddn.com/Screen%20Shot%202017-03-05%20at%2010.10.36%20PM.png?imageMogr2/auto-orient/thumbnail/x700/blur/1x0/quality/75|imageslim)
+
 
 ####项目WIKI
 采用 [dokuwiki](https://www.dokuwiki.org/dokuwiki#) 搭建项目 WIKI，地址在 http://162.243.187.85/dokuwiki/doku.php?id=api (服务器在美国，访问较慢）
@@ -29,5 +33,5 @@ AlwaysAround 是一个类 Uber 的宠物托管服务App，我们提供给用户�
 测试账户: test
 密码: test123
 
-![wiki](http://om73fjcgf.bkt.clouddn.com/Screen%20Shot%202017-03-05%20at%209.23.01%20PM.png)
+![wiki](http://om73fjcgf.bkt.clouddn.com/Screen%20Shot%202017-03-05%20at%209.23.01%20PM.png?imageMogr2/auto-orient/thumbnail/x700/blur/1x0/quality/75|imageslim)
 
